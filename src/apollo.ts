@@ -1,4 +1,7 @@
-import { ApolloServer, gql } from "apollo-server-express"
+import { ApolloServer } from "@apollo/server"
+import gql from "graphql-tag"
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
+import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled"
 import postgres from "postgres"
 
 const sql = postgres()
@@ -32,6 +35,12 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
   persistedQueries: false,
+  plugins: [
+    // Install a landing page plugin based on NODE_ENV
+    process.env.NODE_ENV === "production"
+      ? ApolloServerPluginLandingPageDisabled()
+      : ApolloServerPluginLandingPageLocalDefault({ footer: false }),
+  ],
 })
 
 export default apolloServer

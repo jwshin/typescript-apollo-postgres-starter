@@ -1,7 +1,13 @@
 import migration from "./migration"
 import apolloServer from "./apollo"
+import { expressMiddleware } from "@apollo/server/express4"
 import { createServer } from "http"
 import express from "express"
+import cors from "cors"
+import { json } from "body-parser"
+
+const PORT = process.env.PORT || 4000
+const PREFIX = "/graphql"
 
 const startServer = async () => {
   const app = express()
@@ -11,15 +17,15 @@ const startServer = async () => {
 
   await apolloServer.start()
 
-  apolloServer.applyMiddleware({
-    app,
-    path: "/graphql",
-  })
+  app.use(
+    PREFIX,
+    cors<cors.CorsRequest>(),
+    json(),
+    expressMiddleware(apolloServer)
+  )
 
-  httpServer.listen({ port: process.env.PORT || 4000 }, () =>
-    console.log(
-      `Server listening on http://localhost:4000${apolloServer.graphqlPath}`
-    )
+  httpServer.listen({ port: PORT }, () =>
+    console.log(`Server listening on http://localhost:${PORT}${PREFIX}`)
   )
 }
 
